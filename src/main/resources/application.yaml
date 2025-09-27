@@ -1,0 +1,17 @@
+server:
+  port: 8088
+spring:
+  main:
+    web-application-type: servlet
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    #ollama:
+   #   base-url: http://localhost:11434
+   #   chat:
+   #     options:
+    #      model: mistral:7b
+     #     temperature: 0.1
+logging:
+  pattern:
+    console: '%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - ${LOG_LEVEL_PATTERN:-%5p} %m%n'
