@@ -4,7 +4,8 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+
 
 @RestController
 @RequestMapping("/api")
@@ -25,7 +26,7 @@ public class SimpleController {
                         .prompt()
                         .user(message)
                         .advisors(
-                                advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId)
+                                advisorSpec -> advisorSpec.param(CONVERSATION_ID, userId)
                         )
                         .call()
                         .content());

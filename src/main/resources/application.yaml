@@ -3,7 +3,15 @@ server:
 spring:
   main:
     web-application-type: servlet
+    allow-bean-definition-overriding: true
   ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            #TODO: потом переименовать
+            schema: classpath:schemas/first_schema.sql
     openai:
       api-key: ${OPENAI_API_KEY}
     #ollama:

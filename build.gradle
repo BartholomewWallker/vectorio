@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'org.vectorio'
@@ -15,23 +17,38 @@ jar {
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+    maven {
+        name = 'Central Portal Snapshots'
+        url = 'https://central.sonatype.com/repository/maven-snapshots/'
+    }
 }
 
+
 dependencies {
-    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.5.0'
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M6'
-    implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc:1.1.0-M2'
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc:1.0.0'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    //implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
 
     implementation 'org.postgresql:postgresql:42.7.8'
   //  implementation 'org.springframework.ai:spring-ai-starter-model-ollama:1.0.1'
     implementation 'org.apache.groovy:groovy:5.0.0'
-    implementation 'org.springframework.boot:spring-boot:3.5.0'
-    implementation("org.springframework.boot:spring-boot-devtools:3.5.6")
+    //implementation 'org.springframework.boot:spring-boot'
+    implementation("org.springframework.boot:spring-boot-devtools")
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
-
+ext {
+    set('springAiVersion', "1.0.0")
+}
+//dependencyManagement {
+  //  imports {
+    //    mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+   // }
+//}
 test {
     useJUnitPlatform()
 }
