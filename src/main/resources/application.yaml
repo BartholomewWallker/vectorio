@@ -14,12 +14,19 @@ spring:
             schema: classpath:schemas/first_schema.sql
     openai:
       api-key: ${OPENAI_API_KEY}
-    #ollama:
-   #   base-url: http://localhost:11434
-   #   chat:
-   #     options:
-    #      model: mistral:7b
-     #     temperature: 0.1
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        remove-existing-vector-store-table: false
+        schema-name: classpath:schemas/vector_data.sql
+
+        #ollama:
+     # base-url: http://${OLLAMA_HOST}:${OLLAMA_PORT}
+     # chat:
+      #  options:
+      #    model: ${LOCALE_MODEL_NAME}
+       #   temperature: 0.1
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DB_NAME}
     username: ${ADMIN}
