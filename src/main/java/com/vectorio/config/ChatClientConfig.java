@@ -16,10 +16,10 @@ import java.util.List;
 @Component
 public class ChatClientConfig {
 
-   /* @Bean
-    public ChatMemory chatMemory(){
-        return new InMemoryChatMemory();
-    }*/
+    /* @Bean
+     public ChatMemory chatMemory(){
+         return new InMemoryChatMemory();
+     }*/
     @Bean
     @Primary
     public ChatMemory chatMemoryRepository( JdbcChatMemoryRepository jdbcChatMemoryRepository) {
@@ -36,4 +36,16 @@ public class ChatClientConfig {
                 .defaultAdvisors(List.of(loggerAdvisor,memoryAdvisor))
                 .build();
     }
+
+   /* @Bean
+    public OllamaChatModel ollamaChatClient(){
+        return OllamaChatModel.builder()
+                .ollamaApi(OllamaApi.builder().build())
+                .defaultOptions(
+                        OllamaOptions.builder()
+                                .model(OllamaModel.GEMMA3)
+                                .temperature(0.1)
+                                .build())
+                .build();
+    }*/
 }

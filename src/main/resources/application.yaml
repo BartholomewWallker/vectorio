@@ -16,7 +16,7 @@ spring:
       api-key: ${OPENAI_API_KEY}
     vectorstore:
       pgvector:
-        initialize-schema: true
+        #initialize-schema: true
         remove-existing-vector-store-table: false
         schema-name: classpath:schemas/vector_data.sql
 
