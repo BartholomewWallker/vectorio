@@ -29,7 +29,7 @@ public class ChatController {
     }
     @GetMapping
     public ResponseEntity<String> message(@RequestHeader("userId") String userId, @RequestParam(value = "message") String message){
-        documentRepository.addTestDocuments();
+        //documentRepository.addTestDocuments();
         return ResponseEntity.ok(
                 chatClient
                         .prompt()

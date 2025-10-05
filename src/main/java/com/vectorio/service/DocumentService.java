@@ -1,37 +1,84 @@
 package com.vectorio.service;
 
+import com.vectorio.model.Metadata;
+import com.vectorio.model.MetadataFields;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class DocumentService {
     private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
+    private final int chunkSize;        // Максимальный размер чанка в символах
+    private final int chunkOverlap;     // Размер перекрытия в символах
 
-    public List<Document> createDocumentList(MultipartFile multipartFile) {
-        return createChunks(checkPdf(multipartFile));
-
+    public DocumentService(
+            @Value("${document.service.chunk-size}")
+            int chunkSize,
+            @Value("${document.service.chunk-overlap}")
+            int chunkOverlap
+    ) {
+        this.chunkSize = chunkSize;
+        this.chunkOverlap = chunkOverlap;
     }
 
-    private List<Document> createChunks(byte[] pdfByteArray) {
+    public List<Document> createDocumentList(Metadata metadata, MultipartFile multipartFile) {
+        return createChunks(metadata,checkPdf(multipartFile));
+    }
+
+    //TODO: переделать под разиение с помощью LM
+    private List<Document> createChunks(Metadata metadata, byte[] pdfByteArray) {
         var chunks = new ArrayList<Document>();
         try (var pdfDocument = Loader.loadPDF(pdfByteArray)) {
             var stripper = new PDFTextStripper();
             var pagesCount = pdfDocument.getNumberOfPages();
+            var metadataMap = getMetadata(metadata);
+
+            var text = stripper.getText(pdfDocument);
+            var paragraphs = text.split("\\r?\\n\\r?\\n");
+            for (String paragraph:paragraphs){
+               if (paragraph.length()>chunkSize) {
+                    chunks.addAll(splitToSentences(metadataMap, paragraph));
+               }else {
+                   chunks.add(new Document(paragraph, metadataMap));
+               }
+            }
+
+
         } catch (IOException exception) {
             log.error("Ошибка ввода вывода при создании чанков");
             throw new RuntimeException(exception);
         }
         return chunks;
+    }
+
+    private List<Document> splitToSentences(Map<String,Object> metadata, String paragraph) {
+        List<Document> sentences = new ArrayList<>();
+        Pattern pattern = Pattern.compile("[^.!?]+[.!?]?");
+        Matcher matcher = pattern.matcher(paragraph);
+        while (matcher.find()) {
+            sentences.add(new Document(matcher.group().trim(), metadata));
+        }
+        return sentences;
+    }
+
+    private Map<String,Object> getMetadata(Metadata metadata) {
+        var map = new HashMap<String,Object>();
+        if (!metadata.name().isEmpty())
+            map.put(MetadataFields.NAME.name(), metadata.name());
+        if (!metadata.type().isEmpty())
+            map.put(MetadataFields.TYPE.name(), metadata.type());
+        return map;
     }
 
     private byte[] checkPdf(MultipartFile multipartFile) {
