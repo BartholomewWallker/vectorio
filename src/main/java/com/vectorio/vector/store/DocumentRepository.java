@@ -16,11 +16,7 @@ public class DocumentRepository {
         this.vectorStore = vectorStore;
     }
 
-    private final List<Document> documents = List.of(
-            new Document("Фамилия Болата Мусылманбеков"),
-            new Document("Дата рождения Болата Мусылманбекова 21 января 1999 года")
-    );
-    public void addTestDocuments(){
+    public void addTestDocuments(List<Document> documents){
         vectorStore.add(documents);
         flag = true;
     }
@@ -29,7 +25,6 @@ public class DocumentRepository {
         if (flag){
             return vectorStore.similaritySearch(SearchRequest.builder().query(request).topK(5).build());
         }
-        addTestDocuments();
         Thread.sleep(3000);
         return vectorStore.similaritySearch(SearchRequest.builder().query(request).topK(5).build());
     }

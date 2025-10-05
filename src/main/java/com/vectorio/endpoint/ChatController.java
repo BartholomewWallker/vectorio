@@ -2,28 +2,30 @@ package com.vectorio.endpoint;
 
 import com.vectorio.vector.store.DocumentRepository;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+
 
 @RestController
-@RequestMapping("/api")
-public class SimpleController {
+@RequestMapping("/api/chat")
+public class ChatController {
     //private final OllamaChatModel chatModel;
     private final ChatClient chatClient;
     private final DocumentRepository documentRepository;
-    private final VectorStore vectorStore;
-    public SimpleController(
+    public ChatController(
             //OllamaChatModel chatModel,
-            ChatClient chatClient, DocumentRepository documentRepository, VectorStore vectorStore) {
+            ChatClient openAIchatClient, DocumentRepository documentRepository) {
 
         //this.chatModel = chatModel;
-        this.chatClient = chatClient;
+        this.chatClient = openAIchatClient;
         this.documentRepository = documentRepository;
-        this.vectorStore = vectorStore;
     }
     @GetMapping
     public ResponseEntity<String> message(@RequestHeader("userId") String userId, @RequestParam(value = "message") String message){
@@ -33,12 +35,7 @@ public class SimpleController {
                         .prompt()
                         .user(message)
                         .advisors(
-                                //(advisorSpec) -> advisorSpec.param(CONVERSATION_ID, userId),
-                                RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
-                                        .similarityThreshold(0.50)
-                                        .vectorStore(vectorStore)
-                                        .build())
-                                        .build()
+                                (advisorSpec) -> advisorSpec.param(CONVERSATION_ID, userId)
                         )
                         .call()
                         .content());
