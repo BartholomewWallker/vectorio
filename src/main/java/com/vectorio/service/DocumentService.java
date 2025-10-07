@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,11 +32,10 @@ public class DocumentService {
         this.chunkOverlap = chunkOverlap;
     }
 
-    public List<Document> createDocumentList(Metadata metadata, MultipartFile multipartFile) {
+    public List<Document> createDocumentList(Metadata metadata, InputStream multipartFile) {
         return createChunks(metadata,checkPdf(multipartFile));
     }
 
-    //TODO: переделать под разиение с помощью LM
     private List<Document> createChunks(Metadata metadata, byte[] pdfByteArray) {
         var chunks = new ArrayList<Document>();
         try (var pdfDocument = Loader.loadPDF(pdfByteArray)) {
@@ -81,15 +80,14 @@ public class DocumentService {
         return map;
     }
 
-    private byte[] checkPdf(MultipartFile multipartFile) {
+    private byte[] checkPdf(InputStream multipartFile) {
         var magic = "%PDF-".getBytes();
         byte[] fileHead;
         byte[] pdfFile = null;
         try {
-            var multipatrtInputStream = multipartFile.getInputStream();
-            fileHead = multipatrtInputStream.readNBytes(magic.length);
+            fileHead = multipartFile.readNBytes(magic.length);
             if (Arrays.equals(magic, fileHead))
-                pdfFile = multipartFile.getBytes();
+                pdfFile = multipartFile.readAllBytes();
         } catch (IOException exception) {
             log.error("что-то не так с файлом для загрузки в RAG");
             throw new RuntimeException(exception);
