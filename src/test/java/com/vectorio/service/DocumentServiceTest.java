@@ -3,13 +3,17 @@ package com.vectorio.service;
 import com.vectorio.model.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Objects;
 
+import static org.mockito.Mockito.mock;
+
 public class DocumentServiceTest {
-    private final DocumentService documentService = new DocumentService(10,10);
+    private final ChatClient chatClient = mock();
+    private final DocumentService documentService = new DocumentService(chatClient,10,10);
     public final
 
     @Test

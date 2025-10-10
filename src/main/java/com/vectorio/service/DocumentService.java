@@ -6,28 +6,35 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.converter.ListOutputConverter;
 import org.springframework.ai.document.Document;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class DocumentService {
     private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
+    private final ChatClient ollamaChatClient;
+    private static final String SYSTEM_PROMPT = "Раздели следующий текст на чанки по 500 символов, стараясь не разрывать предложения: ";
     private final int chunkSize;        // Максимальный размер чанка в символах
     private final int chunkOverlap;     // Размер перекрытия в символах
 
     public DocumentService(
+            @Qualifier("ollamaChatClient")
+            ChatClient ollamaChatClient,
             @Value("${document.service.chunk-size}")
             int chunkSize,
             @Value("${document.service.chunk-overlap}")
             int chunkOverlap
     ) {
+        this.ollamaChatClient = ollamaChatClient;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
     }
@@ -40,7 +47,6 @@ public class DocumentService {
         var chunks = new ArrayList<Document>();
         try (var pdfDocument = Loader.loadPDF(pdfByteArray)) {
             var stripper = new PDFTextStripper();
-            var pagesCount = pdfDocument.getNumberOfPages();
             var metadataMap = getMetadata(metadata);
 
             var text = stripper.getText(pdfDocument);
@@ -53,7 +59,6 @@ public class DocumentService {
                }
             }
 
-
         } catch (IOException exception) {
             log.error("Ошибка ввода вывода при создании чанков");
             throw new RuntimeException(exception);
@@ -63,11 +68,15 @@ public class DocumentService {
 
     private List<Document> splitToSentences(Map<String,Object> metadata, String paragraph) {
         List<Document> sentences = new ArrayList<>();
-        Pattern pattern = Pattern.compile("[^.!?]+[.!?]?");
-        Matcher matcher = pattern.matcher(paragraph);
-        while (matcher.find()) {
-            sentences.add(new Document(matcher.group().trim(), metadata));
-        }
+        var sentencesResponse = ollamaChatClient
+                .prompt()
+                .system(SYSTEM_PROMPT)
+                .user(paragraph)
+                .call().entity(new ListOutputConverter(new DefaultConversionService()));
+        if (sentencesResponse!=null)
+            sentencesResponse.forEach(e->sentences.add(new Document(e, metadata)));
+        else
+            log.error("Ошибка получения документов. Локальная модель не запущена или не отправила ответ");
         return sentences;
     }
 
