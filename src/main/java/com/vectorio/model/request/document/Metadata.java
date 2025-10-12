@@ -1,4 +1,4 @@
-package com.vectorio.model;
+package com.vectorio.model.request.document;
 
 import java.io.Serializable;
 

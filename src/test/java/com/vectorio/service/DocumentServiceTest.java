@@ -1,6 +1,6 @@
 package com.vectorio.service;
 
-import com.vectorio.model.Metadata;
+import com.vectorio.model.request.document.Metadata;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;

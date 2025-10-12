@@ -10,6 +10,7 @@ import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class ChatClientConfig {
         this.vectorStore = vectorStore;
     }
 
-    @Bean
+    @Bean("openAIchatClient")
     public ChatClient openAIchatClient(ChatModel openAiChatModel, ChatMemory chatMemoryRepository) {
         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemoryRepository).build();
         Advisor ragAdvisor = RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
@@ -36,16 +37,23 @@ public class ChatClientConfig {
                 .build();
     }
 
-    @Bean
-    public ChatClient ollamaChatClient(ChatModel ollamaChatClient, ChatMemory chatMemoryRepository) {
+    @Bean("ollamaChatClient")
+    @Primary
+    public ChatClient ollamaChatClient(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository) {
         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemoryRepository).build();
         Advisor ragAdvisor = RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
                         .similarityThreshold(0.50)
                         .vectorStore(vectorStore)
                         .build())
                 .build();
-        return ChatClient.builder(ollamaChatClient)
+        return ChatClient.builder(ollamaChatModel)
                 .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
+                .build();
+    }
+
+    @Primary
+    public ChatClient simpleOllamaRagAdvisor(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository) {
+        return ChatClient.builder(ollamaChatModel)
                 .build();
     }
 

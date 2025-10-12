@@ -1,6 +1,13 @@
 server:
   port: 8088
+document:
+  service:
+    chunk-size: 300
+    chunk-overlap: 10
 spring:
+  servlet:
+    multipart:
+      enabled: true
   main:
     web-application-type: servlet
     allow-bean-definition-overriding: true

@@ -48,12 +48,12 @@ public class ChatModelConfig {
     }
 
     @Bean
-    public OllamaChatModel ollamaChatClient(){
+    public OllamaChatModel ollamaChatModel(){
         return OllamaChatModel.builder()
-                .ollamaApi(OllamaApi.builder().build())
+                .ollamaApi(OllamaApi.builder().baseUrl("http://localhost:11434").build())
                 .defaultOptions(
                         OllamaOptions.builder()
-                                .model(OllamaModel.GEMMA3)
+                                .model(OllamaModel.MISTRAL)
                                 .temperature(0.1)
                                 .build())
                 .build();

@@ -1,6 +1,8 @@
 package com.vectorio.service;
 
-import com.vectorio.model.Metadata;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vectorio.model.request.document.Metadata;
 import com.vectorio.model.MetadataFields;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -9,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.converter.ListOutputConverter;
 import org.springframework.ai.document.Document;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.stereotype.Service;
@@ -21,20 +22,21 @@ import java.util.*;
 @Service
 public class DocumentService {
     private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ChatClient ollamaChatClient;
     private static final String SYSTEM_PROMPT = "Раздели следующий текст на чанки по 500 символов, стараясь не разрывать предложения: ";
     private final int chunkSize;        // Максимальный размер чанка в символах
     private final int chunkOverlap;     // Размер перекрытия в символах
 
     public DocumentService(
-            @Qualifier("ollamaChatClient")
-            ChatClient ollamaChatClient,
+            ChatClient simpleOllamaRagAdvisor,
             @Value("${document.service.chunk-size}")
             int chunkSize,
             @Value("${document.service.chunk-overlap}")
             int chunkOverlap
     ) {
-        this.ollamaChatClient = ollamaChatClient;
+        this.ollamaChatClient = simpleOllamaRagAdvisor;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
     }
@@ -55,6 +57,7 @@ public class DocumentService {
                if (paragraph.length()>chunkSize) {
                     chunks.addAll(splitToSentences(metadataMap, paragraph));
                }else {
+                   log.info("Будет добавлен следующий чанк: {}", paragraph);
                    chunks.add(new Document(paragraph, metadataMap));
                }
             }
@@ -66,17 +69,23 @@ public class DocumentService {
         return chunks;
     }
 
-    private List<Document> splitToSentences(Map<String,Object> metadata, String paragraph) {
+    private List<Document> splitToSentences(Map<String,Object> metadata, String paragraph) throws JsonProcessingException {
         List<Document> sentences = new ArrayList<>();
-        var sentencesResponse = ollamaChatClient
-                .prompt()
-                .system(SYSTEM_PROMPT)
-                .user(paragraph)
+        log.info("На вход поступил параграф следущего содержимого: {}", paragraph);
+        log.debug("Системный промпт: {}", SYSTEM_PROMPT);
+        var result =  ollamaChatClient
+                .prompt(SYSTEM_PROMPT+paragraph)
                 .call().entity(new ListOutputConverter(new DefaultConversionService()));
+        log.info("Получили ответ от AI {}",result);
+        /*String [] array = objectMapper.readValue(result, String[].class);
+        var sentencesResponse = Arrays.asList(array);
         if (sentencesResponse!=null)
-            sentencesResponse.forEach(e->sentences.add(new Document(e, metadata)));
+            sentencesResponse.forEach(e->{
+                log.info("AI добавит следующий чанк: {}", e);
+                sentences.add(new Document(e, metadata));
+            });
         else
-            log.error("Ошибка получения документов. Локальная модель не запущена или не отправила ответ");
+            log.error("Ошибка получения документов. Локальная модель не запущена или не отправила ответ");*/
         return sentences;
     }
 

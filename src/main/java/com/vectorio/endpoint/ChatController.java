@@ -20,11 +20,10 @@ public class ChatController {
     private final ChatClient chatClient;
     private final DocumentRepository documentRepository;
     public ChatController(
-            //OllamaChatModel chatModel,
-            ChatClient openAIchatClient, DocumentRepository documentRepository) {
+            ChatClient ollamaChatClient, DocumentRepository documentRepository) {
 
         //this.chatModel = chatModel;
-        this.chatClient = openAIchatClient;
+        this.chatClient = ollamaChatClient;
         this.documentRepository = documentRepository;
     }
     @GetMapping
