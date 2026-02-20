@@ -12,6 +12,16 @@ spring:
     web-application-type: servlet
     allow-bean-definition-overriding: true
   ai:
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-server.json
+
+        enabled: true
+        name: "default"
+        request-timeout: 30s
+        initialized: true
+
     chat:
       memory:
         repository:
@@ -45,3 +55,5 @@ spring:
 logging:
   pattern:
     console: '%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - ${LOG_LEVEL_PATTERN:-%5p} %m%n'
+  level:
+    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: "debug"

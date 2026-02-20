@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class DocumentService {
@@ -25,7 +27,7 @@ public class DocumentService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ChatClient ollamaChatClient;
-    private static final String SYSTEM_PROMPT = "Раздели следующий текст на чанки по 500 символов, стараясь не разрывать предложения: ";
+    private static final String SYSTEM_PROMPT = "Раздели следующий текст на чанки по 500 символов, стараясь не разрывать предложенияб ответ отправь в виде массива строк: ";
     private final int chunkSize;        // Максимальный размер чанка в символах
     private final int chunkOverlap;     // Размер перекрытия в символах
 
@@ -74,18 +76,25 @@ public class DocumentService {
         log.info("На вход поступил параграф следущего содержимого: {}", paragraph);
         log.debug("Системный промпт: {}", SYSTEM_PROMPT);
         var result =  ollamaChatClient
-                .prompt(SYSTEM_PROMPT+paragraph)
+                .prompt().messages()
                 .call().entity(new ListOutputConverter(new DefaultConversionService()));
-        log.info("Получили ответ от AI {}",result);
-        /*String [] array = objectMapper.readValue(result, String[].class);
+        result.forEach(e->log.info("Получили ответ от AI {}",e));
+        sentences = new ArrayList<>();
+        Pattern pattern = Pattern.compile("[^.!?]+[.!?]?");
+        Matcher matcher = pattern.matcher(paragraph);
+        while (matcher.find()) {
+            sentences.add(new Document(matcher.group().trim(), metadata));
+        }
+        log.info("начинаем процесс");
+        String [] array = objectMapper.readValue(paragraph, String[].class);
         var sentencesResponse = Arrays.asList(array);
         if (sentencesResponse!=null)
             sentencesResponse.forEach(e->{
-                log.info("AI добавит следующий чанк: {}", e);
-                sentences.add(new Document(e, metadata));
+                log.info("Ai добавит : {}", e);
+                //sentences.add(new Document(e, metadata));
             });
         else
-            log.error("Ошибка получения документов. Локальная модель не запущена или не отправила ответ");*/
+            log.error("Ошибка получения документов. Локальная модель не запущена или не отправила ответ");
         return sentences;
     }
 
@@ -115,4 +124,5 @@ public class DocumentService {
         }
         return pdfFile;
     }
+
 }

@@ -53,8 +53,8 @@ public class ChatModelConfig {
                 .ollamaApi(OllamaApi.builder().baseUrl("http://localhost:11434").build())
                 .defaultOptions(
                         OllamaOptions.builder()
-                                .model(OllamaModel.MISTRAL)
-                                .temperature(0.1)
+                                .model(OllamaModel.QWEN3_4B)
+                                .temperature(0.2)
                                 .build())
                 .build();
     }

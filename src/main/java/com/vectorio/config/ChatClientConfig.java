@@ -8,6 +8,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -39,7 +40,7 @@ public class ChatClientConfig {
 
     @Bean("ollamaChatClient")
     @Primary
-    public ChatClient ollamaChatClient(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository) {
+    public ChatClient ollamaChatClient(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository, ToolCallbackProvider toolCallbackProvider) {
         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemoryRepository).build();
         Advisor ragAdvisor = RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
                         .similarityThreshold(0.50)
@@ -47,7 +48,10 @@ public class ChatClientConfig {
                         .build())
                 .build();
         return ChatClient.builder(ollamaChatModel)
-                .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .defaultToolCallbacks(toolCallbackProvider)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+               // .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
                 .build();
     }
 
