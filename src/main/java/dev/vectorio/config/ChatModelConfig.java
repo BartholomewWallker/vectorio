@@ -1,5 +1,5 @@
 
-package com.vectorio.config;
+package dev.vectorio.config;
 
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
@@ -12,6 +12,7 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 @Component
 public class ChatModelConfig {
@@ -48,9 +49,27 @@ public class ChatModelConfig {
     }
 
     @Bean
+    public OpenAiChatModel customChatModel(){
+        return OpenAiChatModel.builder()
+                .openAiApi(OpenAiApi.builder()
+                        .baseUrl("http://10.0.0.15:8080")
+                        .restClientBuilder(RestClient.builder())
+                        .apiKey(openAiApiKey)
+                        .build())
+                .defaultOptions(
+                        OpenAiChatOptions.builder()
+                                .model("qwen/qwen3-8b")
+                                .streamUsage(true)
+                                .temperature(0.2)
+                                .build())
+                .build();
+    }
+    @Bean
     public OllamaChatModel ollamaChatModel(){
         return OllamaChatModel.builder()
-                .ollamaApi(OllamaApi.builder().baseUrl("http://localhost:11434").build())
+                .ollamaApi(OllamaApi.builder()
+                        .baseUrl("http://localhost:11434")
+                        .build())
                 .defaultOptions(
                         OllamaOptions.builder()
                                 .model(OllamaModel.QWEN3_4B)

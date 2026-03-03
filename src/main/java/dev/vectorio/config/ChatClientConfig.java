@@ -1,4 +1,4 @@
-package com.vectorio.config;
+package dev.vectorio.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -38,8 +38,23 @@ public class ChatClientConfig {
                 .build();
     }
 
+    @Bean("customChatClient")
+    public ChatClient customChatClient(ChatModel customChatModel, ChatMemory chatMemoryRepository, ToolCallbackProvider toolCallbackProvider) {
+        Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemoryRepository).build();
+        Advisor ragAdvisor = RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .similarityThreshold(0.50)
+                        .vectorStore(vectorStore)
+                        .build())
+                .build();
+        return ChatClient.builder(customChatModel)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .defaultToolCallbacks(toolCallbackProvider)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+               // .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
+                .build();
+    }
+
     @Bean("ollamaChatClient")
-    @Primary
     public ChatClient ollamaChatClient(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository, ToolCallbackProvider toolCallbackProvider) {
         Advisor memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemoryRepository).build();
         Advisor ragAdvisor = RetrievalAugmentationAdvisor.builder().documentRetriever(VectorStoreDocumentRetriever.builder()
@@ -51,11 +66,11 @@ public class ChatClientConfig {
                 .defaultAdvisors(new SimpleLoggerAdvisor())
                 .defaultToolCallbacks(toolCallbackProvider)
                 .defaultAdvisors(new SimpleLoggerAdvisor())
-               // .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
+                // .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor, ragAdvisor))
                 .build();
     }
 
-    @Primary
+    @Bean
     public ChatClient simpleOllamaRagAdvisor(ChatModel ollamaChatModel, ChatMemory chatMemoryRepository) {
         return ChatClient.builder(ollamaChatModel)
                 .build();

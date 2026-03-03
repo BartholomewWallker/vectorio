@@ -1,4 +1,4 @@
-package com.vectorio.vector.store;
+package dev.vectorio.vector.store;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;

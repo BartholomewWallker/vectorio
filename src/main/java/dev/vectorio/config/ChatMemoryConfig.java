@@ -1,4 +1,4 @@
-package com.vectorio.config;
+package dev.vectorio.config;
 
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;

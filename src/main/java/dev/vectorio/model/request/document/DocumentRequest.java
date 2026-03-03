@@ -1,4 +1,4 @@
-package com.vectorio.model.request.document;
+package dev.vectorio.model.request.document;
 
 import org.springframework.web.multipart.MultipartFile;
 

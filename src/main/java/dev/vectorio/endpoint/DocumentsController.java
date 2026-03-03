@@ -1,7 +1,7 @@
-package com.vectorio.endpoint;
+package dev.vectorio.endpoint;
 
-import com.vectorio.model.request.document.Metadata;
-import com.vectorio.service.DocumentService;
+import dev.vectorio.model.request.document.Metadata;
+import dev.vectorio.service.DocumentService;
 import org.springframework.ai.document.Document;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class DocumentsController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<Document>> addDocuments(@RequestPart Metadata metadata, @RequestPart MultipartFile multipartFile) throws IOException {
-        var result = documentService.createDocumentList(metadata,multipartFile.getInputStream());
+        var result = documentService.saveDocuments(metadata,multipartFile.getInputStream());
         return ResponseEntity.ok(result);
     }
 }

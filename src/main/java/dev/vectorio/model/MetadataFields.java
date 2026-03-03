@@ -1,4 +1,4 @@
-package com.vectorio.model;
+package dev.vectorio.model;
 
 public enum MetadataFields {
     TYPE,

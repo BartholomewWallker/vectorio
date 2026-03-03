@@ -1,4 +1,4 @@
-package com.vectorio.config;
+package dev.vectorio.config;
 
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;

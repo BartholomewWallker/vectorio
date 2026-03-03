@@ -1,4 +1,4 @@
-package com.vectorio.endpoint;
+package dev.vectorio.endpoint;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/mcp/api")
 public class McpController {
     private final ChatClient chatClient;
-    public McpController(ChatClient openAIchatClient){
+
+    public McpController(
+            @Qualifier ("ollamaChatClient")ChatClient openAIchatClient){
         this.chatClient = openAIchatClient;
     }
     @GetMapping
