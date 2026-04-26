@@ -1,17 +1,59 @@
 server:
   port: 8088
+document:
+  service:
+    chunk-size: 300
+    chunk-overlap: 10
 spring:
+  servlet:
+    multipart:
+      enabled: true
   main:
     web-application-type: servlet
+    allow-bean-definition-overriding: true
   ai:
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-server.json
+
+        enabled: true
+        name: "default"
+        request-timeout: 30s
+        initialized: true
+
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            #TODO: потом переименовать
+            schema: classpath:schemas/first_schema.sql
     openai:
       api-key: ${OPENAI_API_KEY}
-    #ollama:
-   #   base-url: http://localhost:11434
-   #   chat:
-   #     options:
-    #      model: mistral:7b
-     #     temperature: 0.1
+    vectorstore:
+      pgvector:
+        #initialize-schema: true
+        remove-existing-vector-store-table: false
+        schema-name: classpath:schemas/vector_data.sql
+
+        #ollama:
+     # base-url: http://${OLLAMA_HOST}:${OLLAMA_PORT}
+     # chat:
+      #  options:
+      #    model: ${LOCALE_MODEL_NAME}
+       #   temperature: 0.1
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DB_NAME}
+    username: ${ADMIN}
+    password: ${SIMPLE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
 logging:
   pattern:
     console: '%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - ${LOG_LEVEL_PATTERN:-%5p} %m%n'
+  level:
+    org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor: "debug"
